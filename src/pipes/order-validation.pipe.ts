@@ -41,8 +41,6 @@ export class OrderValidationPipe implements PipeTransform<any> {
 
     // Check if zip codes are 6 characters long (excluding spaces)
     const zipCodeRegex = /^[A-Z\d\s]{6}$/;
-    console.log('zipCode =>', zipCodeRegex.test(dropoff.zipcode));
-    console.log('zipCode =>', zipCodeRegex.test(pickup.zipcode));
     if (
       !zipCodeRegex.test(dropoff.zipcode) ||
       !zipCodeRegex.test(pickup.zipcode)

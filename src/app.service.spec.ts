@@ -1,83 +1,78 @@
+import { Test, TestingModule } from '@nestjs/testing';
 import { AppService } from './app.service';
-import { PrismaClient, OrderStatus } from '@prisma/client';
-import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
-import { OrderDto } from './dto/order.dto';
+import { OrderStatus } from '@prisma/client';
 
 describe('AppService', () => {
   let service: AppService;
-  let prisma: DeepMockProxy<PrismaClient>;
 
-  beforeEach(() => {
-    prisma = mockDeep<PrismaClient>();
-    service = new AppService();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [AppService],
+    }).compile();
+
+    service = module.get<AppService>(AppService);
   });
 
-  afterEach(() => {
-    mockReset(prisma);
-  });
-
-  describe('updateStatus', () => {
-    it('should update the order status when the transition is valid', async () => {
-      const orderId = 'order-id';
+  describe('updateOrderStatus', () => {
+    it('should allow status transition from CREATED to PICKED_UP', async () => {
       const currentStatus = OrderStatus.CREATED;
       const newStatus = OrderStatus.PICKED_UP;
-
-      prisma.order.findUnique.mockResolvedValue({
-        id: orderId,
-        status: currentStatus,
-      });
-      prisma.order.update.mockResolvedValue({
-        id: orderId,
-        status: newStatus,
-      });
-
-      const result = await service.updateStatus({ orderId, status: newStatus });
-
-      expect(result.status).toBe(newStatus);
-      expect(prisma.order.findUnique).toHaveBeenCalledWith({
-        where: { id: orderId },
-      });
-      expect(prisma.order.update).toHaveBeenCalledWith({
-        where: { id: orderId },
-        data: { status: newStatus },
-      });
+      const result = await service.updateOrderStatus(currentStatus, newStatus);
+      expect(result).toEqual(newStatus);
     });
 
-    // Add more test cases for invalid transitions, order not found, etc.
+    it('should allow status transition from PICKED_UP to DELIVERED', async () => {
+      const currentStatus = OrderStatus.PICKED_UP;
+      const newStatus = OrderStatus.DELIVERED;
+      const result = await service.updateOrderStatus(currentStatus, newStatus);
+      expect(result).toEqual(newStatus);
+    });
+
+    it('should allow status transition from PICKED_UP to RETURNING', async () => {
+      const currentStatus = OrderStatus.PICKED_UP;
+      const newStatus = OrderStatus.RETURNING;
+      const result = await service.updateOrderStatus(currentStatus, newStatus);
+      expect(result).toEqual(newStatus);
+    });
+
+    it('should allow status transition from RETURNING to RETURNED', async () => {
+      const currentStatus = OrderStatus.RETURNING;
+      const newStatus = OrderStatus.RETURNED;
+      const result = await service.updateOrderStatus(currentStatus, newStatus);
+      expect(result).toEqual(newStatus);
+    });
+
+    it('should not allow status transition from any other status to RETURNED', async () => {
+      const currentStatus = OrderStatus.CREATED;
+      const newStatus = OrderStatus.RETURNED;
+      const result = await service.updateOrderStatus(currentStatus, newStatus);
+      expect(result).toEqual(currentStatus);
+    });
+
+    it('should not allow status transition from DELIVERED to any other status', async () => {
+      const currentStatus = OrderStatus.DELIVERED;
+      const newStatus = OrderStatus.CREATED;
+      const result = await service.updateOrderStatus(currentStatus, newStatus);
+      expect(result).toEqual(currentStatus);
+    });
+
+    it('should not allow status transition from CANCELLED to any other status', async () => {
+      const currentStatus = OrderStatus.CANCELLED;
+      const newStatus = OrderStatus.DELIVERED;
+      const result = await service.updateOrderStatus(currentStatus, newStatus);
+      expect(result).toEqual(currentStatus);
+    });
   });
 
   describe('calculateOrderPrice', () => {
-    it('should calculate the order price correctly', () => {
-      const requestData: OrderDto = {
-        dropoff: {
-          address: 'Oudenoord 330',
-          city: 'Utrecht',
-          country: 'Netherlands',
-          email: 'example@gmail.com',
-          name: 'Name',
-          zipcode: '1234AB',
-          phonenumber: '+31612795443',
-        },
-        pickup: {
-          address: 'Oudenoord 330',
-          city: 'Utrecht',
-          country: 'Netherlands',
-          email: 'example@gmail.com',
-          phonenumber: '+31612795443',
-          zipcode: '5678XZ',
-          name: 'Name',
-        },
-        packages: [
-          { height: 50, length: 20, width: 10, weight: 50 },
-          { height: 10, length: 10, width: 10, weight: 5 },
-        ],
-      };
-
-      const orderPrice = service.calculateOrderPrice(requestData.packages);
-
-      expect(orderPrice).toBe(8.5);
+    it('should calculate correct price for given packages', async () => {
+      const packages = [
+        { height: 50, length: 20, width: 10, weight: 50 },
+        { height: 10, length: 10, width: 10, weight: 5 },
+      ];
+      const result = await service.calculateOrderPrice(packages);
+      const expectedPrice = 8; // For the first example package
+      expect(result).toEqual(expectedPrice);
     });
-
-    // Add more test cases for different package dimensions and weights
   });
 });

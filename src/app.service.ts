@@ -51,6 +51,24 @@ export class AppService {
     }
   }
 
+  // async calculateOrderPrice(packages: PackageDto[]): Promise<number> {
+  //   let totalPrice = 0;
+
+  //   // Base cost for each package
+  //   totalPrice += packages.length;
+
+  //   // Additional cost based on volume and weight
+  //   for (const pkg of packages) {
+  //     const volume = pkg.height * pkg.length * pkg.width;
+  //     const volumeCharge = Math.max(0, Math.round(volume / 5000) - 1) * 0.5;
+  //     const weightCharge = pkg.weight * 0.1;
+
+  //     totalPrice += volumeCharge + weightCharge;
+  //   }
+
+  //   return totalPrice;
+  // }
+
   async calculateOrderPrice(packages: PackageDto[]): Promise<number> {
     let totalPrice = 0;
 
@@ -60,7 +78,14 @@ export class AppService {
     // Additional cost based on volume and weight
     for (const pkg of packages) {
       const volume = pkg.height * pkg.length * pkg.width;
-      const volumeCharge = Math.max(0, Math.floor(volume / 5000) - 1) * 0.5;
+      let volumeCharge = 0;
+
+      // Calculate additional charge for volume
+      if (volume > 5000) {
+        const additionalVolume = Math.ceil((volume - 5000) / 5000); // Calculate additional 5000s
+        volumeCharge = additionalVolume * 0.5; // Charge €0.50 for each additional 5000
+      }
+
       const weightCharge = pkg.weight * 0.1;
 
       totalPrice += volumeCharge + weightCharge;
@@ -103,7 +128,7 @@ export class AppService {
     };
   }
 
-  private async updateOrderStatus(
+  async updateOrderStatus(
     currentStatus: OrderStatus,
     newStatus: OrderStatus,
   ): Promise<OrderStatus> {
