@@ -6,10 +6,13 @@ import {
 } from '@nestjs/common';
 import { OrderDto, PackageDto } from './dto/order.dto';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+});
+
 
 @Injectable()
 export class AppService {
+
   async createOrder(data: OrderDto): Promise<Order> {
     try {
       const { packages, dropoff, pickup } = data;
@@ -19,7 +22,7 @@ export class AppService {
           amount: price,
         },
       });
-
+ // Get order id then attach it to the package
       await prisma.address.create({
         data: {
           orderId: order.id,
@@ -35,7 +38,7 @@ export class AppService {
           ...pickup,
         },
       });
-
+    
       packages.forEach(async (pkg) => {
         await prisma.package.create({
           data: {
@@ -51,29 +54,12 @@ export class AppService {
     }
   }
 
-  // async calculateOrderPrice(packages: PackageDto[]): Promise<number> {
-  //   let totalPrice = 0;
-
-  //   // Base cost for each package
-  //   totalPrice += packages.length;
-
-  //   // Additional cost based on volume and weight
-  //   for (const pkg of packages) {
-  //     const volume = pkg.height * pkg.length * pkg.width;
-  //     const volumeCharge = Math.max(0, Math.round(volume / 5000) - 1) * 0.5;
-  //     const weightCharge = pkg.weight * 0.1;
-
-  //     totalPrice += volumeCharge + weightCharge;
-  //   }
-
-  //   return totalPrice;
-  // }
-
   async calculateOrderPrice(packages: PackageDto[]): Promise<number> {
-    let totalPrice = 0;
+    let totalPrice = 0;//initialize total price to 0. 
+    //Handle the price calculation based on the given parameters
 
     // Base cost for each package
-    totalPrice += packages.length;
+    totalPrice += packages.length;//We're checking how many packages we have
 
     // Additional cost based on volume and weight
     for (const pkg of packages) {
@@ -127,7 +113,19 @@ export class AppService {
       oldStatus: currentStatus,
     };
   }
+  async getOrderIds(): Promise<string[]> {
+    const orders = await prisma.order.findMany({
+      select: {
+        id: true,
+      },
+    });
+    return orders.map(order => order.id);
+  }
 
+
+
+
+  //State Machine
   async updateOrderStatus(
     currentStatus: OrderStatus,
     newStatus: OrderStatus,

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, Post, Get, UsePipes } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiOperation } from '@nestjs/swagger';
 import { OrderValidationPipe } from './pipes/order-validation.pipe';
@@ -22,6 +22,12 @@ export class AppController {
     @Body() data: { orderId: string; status: OrderStatus },
   ) {
     return await this.appService.updateStatus(data);
+  }
+
+  @Get('order/ids')
+  @ApiOperation({ summary: 'Get all order IDs' })
+  async getOrderIds() {
+    return this.appService.getOrderIds();
   }
 
   @Post('order/search')
