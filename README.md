@@ -58,7 +58,6 @@ Tests focus on critical functionalities like price calculation and status updati
      - Yarn: `yarn prisma studio`
      - npm: `npx prisma studio`
 
-
 ### Testing Endpoints
 
 To test the application's endpoints, you can use the provided Postman collection. This allows you to quickly interact with the API, testing its functionality and response to various requests.
@@ -66,6 +65,19 @@ To test the application's endpoints, you can use the provided Postman collection
 - **Postman Collection**: Access and import the collection using the following link: [Postman Collection](https://api.postman.com/collections/10865182-7d9c935c-b12a-4709-9fb2-6c0b25916d63?access_key=PMAT-01HSV5DRRH21QZ9PE1NT94TT5J).
   - After importing, ensure you set the base URL to `http://localhost:3333/api/` to match your local development environment.
   - Adjust the environment settings as needed to correspond with your local or staging environments for comprehensive testing.
+
+#### New Update: Testing the Get Order IDs Endpoint
+
+I've added a new endpoint to retrieve all order IDs. Here's how you can test it using Postman:
+
+1. **Open Postman** and select "New Request".
+2. **Set the request type to GET** and enter the URL for the endpoint: `http://localhost:3333/order/ids` (adjust the port number if your application runs on a different port).
+3. **Send the request** and you should receive a response containing an array of order IDs.
+   - Ensure your application is running locally and connected to your MongoDB instance.
+   - This endpoint does not require any request body or parameters.
+
+This new endpoint allows us to quickly fetch a list of all order IDs, useful for administrative and debugging purposes.
+
 
 
 ### API Documentation
