@@ -1,73 +1,85 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+## Order Creation Flow in NestJS Application
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+### Overview
+This document outlines the flow and setup for an order creation feature in a NestJS application, highlighting key validation steps and the integration of Prisma for database management.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### Validation and Processing Flow
 
-## Description
+1. **Order Validation Pipe**: The process begins with the `OrderValidationPipe`, which validates incoming data against predefined rules.
+   - **Data Interception**: Validates and processes the data, ensuring compliance with our requirements, including:
+     - **Package Validation**: Checks that package information is present.
+     - **Address Handling**: Validates both shipping and billing addresses.
+     - **Zipcode Validation**: Ensures the zipcode is exactly 6 characters long.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+2. **DTO Validation**: Utilizes the `OrderDTO` to further validate the data structure, ensuring it meets the order format requirements.
 
-## Installation
+3. **Class Validator Integration**: Incorporates a class validator for robust data validation within interceptor pipes.
 
-```bash
-$ yarn install
-```
+4. **Data Processing and Order Creation**: Involves destructuring the data, calculating the total amount, and assigning a default order status. Also includes:
+   - **Volume-based Pricing**: Adjusts pricing based on the volume of each package.
 
-## Running the app
+5. **Data Saving**: Prioritizes order saving to maintain relational data integrity and optimizes address handling by using a single model for both pickup and dropoff addresses.
 
-```bash
-# development
-$ yarn run start
+### Prisma Integration
 
-# watch mode
-$ yarn run start:dev
+Prisma is chosen for its strong typing system, support for multiple databases, and ease of migration. Prisma ensures that database operations are efficient and scalable.
 
-# production mode
-$ yarn run start:prod
-```
+### Testing
 
-## Test
+Tests focus on critical functionalities like price calculation and status updating, ensuring the application meets its specifications.
 
-```bash
-# unit tests
-$ yarn run test
+## Setup Instructions
 
-# e2e tests
-$ yarn run test:e2e
+### Prerequisites
 
-# test coverage
-$ yarn run test:cov
-```
+- Install the Nest CLI.
+- Ensure MongoDB is running and connected.
+- Choose either Yarn or npm as your package manager.
 
-## Support
+### Installation Steps
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+1. **Clone the Repository**: Obtain the project code by cloning the repository.
 
-## Stay in touch
+2. **Install Dependencies**:
+   - Using Yarn: `yarn install`
+   - Using npm: `npm install`
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+3. **Install and Setup Prisma**:
+   - Add Prisma: 
+     - Yarn: `yarn add prisma`
+     - npm: `npm install prisma`
+   - Generate Prisma client:
+     - Yarn: `yarn prisma generate`
+     - npm: `npx prisma generate`
+   - Apply database migrations:
+     - Yarn: `yarn prisma migrate dev`
+     - npm: `npx prisma migrate dev`
+   - Open Prisma Studio to view the database:
+     - Yarn: `yarn prisma studio`
+     - npm: `npx prisma studio`
 
-## License
+### Testing Endpoints
 
-Nest is [MIT licensed](LICENSE).
+To test the application's endpoints, you can use the provided Postman collection. This allows you to quickly interact with the API, testing its functionality and response to various requests.
+
+- **Postman Collection**: Access and import the collection using the following link: [Postman Collection](https://api.postman.com/collections/10865182-7d9c935c-b12a-4709-9fb2-6c0b25916d63?access_key=PMAT-01HSV5DRRH21QZ9PE1NT94TT5J).
+  - After importing, ensure you set the base URL to `http://localhost:3333/api/` to match your local development environment.
+  - Adjust the environment settings as needed to correspond with your local or staging environments for comprehensive testing.
+
+#### New Update: Testing the Get Order IDs Endpoint
+
+I've added a new endpoint to retrieve all order IDs. Here's how you can test it using Postman:
+
+1. **Open Postman** and select "New Request".
+2. **Set the request type to GET** and enter the URL for the endpoint: `http://localhost:3333/order/ids` (adjust the port number if your application runs on a different port).
+3. **Send the request** and you should receive a response containing an array of order IDs.
+   - Ensure your application is running locally and connected to your MongoDB instance.
+   - This endpoint does not require any request body or parameters.
+
+This new endpoint allows us to quickly fetch a list of all order IDs, useful for administrative and debugging purposes.
+
+
+
+### API Documentation
+
+- Access detailed API documentation by visiting `http://localhost:3333/api/docs` once the application is successfully running.
